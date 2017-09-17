@@ -6,6 +6,7 @@ const propTypes = {
 	autoload: PropTypes.bool.isRequired,       // automatically call the `loadOptions` prop on-mount; defaults to true
 	cache: PropTypes.any,                      // object to use to cache results; set to null/false to disable caching
 	children: PropTypes.func.isRequired,       // Child function responsible for creating the inner Select component; (props: Object): PropTypes.element
+	debounce: PropTypes.number,								 // time delay in ms for search debounce function
 	ignoreAccents: PropTypes.bool,             // strip diacritics when filtering; defaults to true
 	ignoreCase: PropTypes.bool,                // perform case-insensitive filtering; defaults to true
 	loadOptions: PropTypes.func.isRequired,    // callback to load options asynchronously; (inputValue: string, callback: Function): ?Promise
@@ -31,11 +32,23 @@ const propTypes = {
 	]),
 	value: PropTypes.any,                      // initial field value
 };
+function debounce( fn, t, thisArg ){
+	let timer;
+
+	return function( str ){
+		if( timer ){
+			clearInterval( timer );
+		}
+		timer = setTimeout( () => fn.call( thisArg, str ), t );
+	};
+}
+
 
 const defaultCache = {};
 
 const defaultProps = {
 	autoload: true,
+	debounce: 500,
 	cache: defaultCache,
 	children: defaultChildren,
 	ignoreAccents: true,
@@ -57,7 +70,7 @@ export default class Async extends Component {
 			options: props.options,
 		};
 
-		this.onInputChange = this.onInputChange.bind(this);
+		this.onInputChange = debounce( this.onInputChange, props.debounce, this );
 	}
 
 	componentDidMount () {

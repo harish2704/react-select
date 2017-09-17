@@ -114,7 +114,6 @@ function clearRenderer() {
 	});
 }
 
-var babelHelpers = {};
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) {
   return typeof obj;
 } : function (obj) {
@@ -344,28 +343,6 @@ var possibleConstructorReturn = function (self, call) {
 
   return call && (typeof call === "object" || typeof call === "function") ? call : self;
 };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-babelHelpers;
 
 var Option = function (_React$Component) {
 	inherits(Option, _React$Component);
@@ -1865,6 +1842,7 @@ var propTypes = {
 	autoload: PropTypes.bool.isRequired, // automatically call the `loadOptions` prop on-mount; defaults to true
 	cache: PropTypes.any, // object to use to cache results; set to null/false to disable caching
 	children: PropTypes.func.isRequired, // Child function responsible for creating the inner Select component; (props: Object): PropTypes.element
+	debounce: PropTypes.number, // time delay in ms for search debounce function
 	ignoreAccents: PropTypes.bool, // strip diacritics when filtering; defaults to true
 	ignoreCase: PropTypes.bool, // perform case-insensitive filtering; defaults to true
 	loadOptions: PropTypes.func.isRequired, // callback to load options asynchronously; (inputValue: string, callback: Function): ?Promise
@@ -1882,11 +1860,24 @@ var propTypes = {
 	PropTypes.string, PropTypes.node]),
 	value: PropTypes.any // initial field value
 };
+function debounce(fn, t, thisArg) {
+	var timer = void 0;
+
+	return function (str) {
+		if (timer) {
+			clearInterval(timer);
+		}
+		timer = setTimeout(function () {
+			return fn.call(thisArg, str);
+		}, t);
+	};
+}
 
 var defaultCache = {};
 
 var defaultProps = {
 	autoload: true,
+	debounce: 500,
 	cache: defaultCache,
 	children: defaultChildren,
 	ignoreAccents: true,
@@ -1912,7 +1903,7 @@ var Async = function (_Component) {
 			options: props.options
 		};
 
-		_this.onInputChange = _this.onInputChange.bind(_this);
+		_this.onInputChange = debounce(_this.onInputChange, props.debounce, _this);
 		return _this;
 	}
 
